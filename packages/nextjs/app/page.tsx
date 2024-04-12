@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { NextPage } from "next";
+import { Info } from "~~/components/Info";
 import { PurchaseTokens } from "~~/components/PurchaseTokens";
 import { AddressInput } from "~~/components/scaffold-eth";
 
@@ -24,7 +25,8 @@ const Home: NextPage = () => {
     <>
       <div className="flex items-center flex-col flex-grow pt-10">
         {header}
-        <div className="flex-grow bg-base-300 w-full mt-16 px-8 py-12">
+        <div className="flex-grow bg-base-300 w-full mt-16 px-8 py-12 space-y-10">
+          {<Info lotteryAddress={lotteryAddress} />}
           <div className="flex justify-center items-center gap-12 flex-col sm:flex-row">
             <PurchaseTokens lotteryAddress={lotteryAddress} />
 
