@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import type { NextPage } from "next";
+import { ClaimPrizes } from "~~/components/ClaimPrizes";
 import { Info } from "~~/components/Info";
+import { PlaceBets } from "~~/components/PlaceBets";
 import { PurchaseTokens } from "~~/components/PurchaseTokens";
 import { AddressInput } from "~~/components/scaffold-eth";
 
@@ -26,13 +28,11 @@ const Home: NextPage = () => {
       <div className="flex items-center flex-col flex-grow pt-10">
         {header}
         <div className="flex-grow bg-base-300 w-full mt-16 px-8 py-12 space-y-10">
-          {<Info lotteryAddress={lotteryAddress} />}
-          <div className="flex justify-center items-center gap-12 flex-col sm:flex-row">
+          <div className="grid grid-cols-2 justify-center items-center gap-12 grid-flow">
+            <Info lotteryAddress={lotteryAddress} />
             <PurchaseTokens lotteryAddress={lotteryAddress} />
-
-            <div className="flex flex-col bg-base-100 px-10 py-10 text-center items-center max-w-xs rounded-3xl">
-              <p>Explore your local transactions.</p>
-            </div>
+            <PlaceBets lotteryAddress={lotteryAddress} />
+            <ClaimPrizes lotteryAddress={lotteryAddress} />
           </div>
         </div>
       </div>
