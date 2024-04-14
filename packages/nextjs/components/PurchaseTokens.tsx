@@ -1,14 +1,13 @@
 import { FC, useState } from "react";
 import { abi } from "../../hardhat/artifacts/contracts/Lottery.sol/Lottery.json";
+import { abi as tokenAbi } from "../../hardhat/artifacts/contracts/LotteryToken.sol/LotteryToken.json";
 import { Address, EtherInput } from "./scaffold-eth";
-import { parseEther } from "viem";
-import { useContractRead, useContractWrite } from "wagmi";
+import { formatEther, parseEther } from "viem";
+import { useAccount, useContractRead, useContractReads, useContractWrite } from "wagmi";
 
 export const PurchaseTokens: FC<{ lotteryAddress: `0x${string}` }> = ({ lotteryAddress }) => {
+  const account = useAccount();
   const [value, setValue] = useState("");
-
-  // TODO implement function to get user's lottery tokens
-  const [lotteryTokens, setLotteryTokens] = useState(0);
 
   const {
     data: paymentToken,
@@ -18,6 +17,29 @@ export const PurchaseTokens: FC<{ lotteryAddress: `0x${string}` }> = ({ lotteryA
     address: lotteryAddress,
     abi,
     functionName: "paymentToken",
+  });
+
+  const tokenContract = {
+    address: (paymentToken as string) || "",
+    abi: tokenAbi as any,
+  };
+
+  const {
+    data: tokenData,
+    isError: tokenIsError,
+    isLoading: tokenIsLoading,
+  } = useContractReads({
+    contracts: [
+      {
+        ...tokenContract,
+        functionName: "symbol",
+      },
+      {
+        ...tokenContract,
+        functionName: "balanceOf",
+        args: [account.address],
+      },
+    ],
   });
 
   const { data, isError, error, isLoading, isSuccess, write } = useContractWrite({
@@ -32,7 +54,9 @@ export const PurchaseTokens: FC<{ lotteryAddress: `0x${string}` }> = ({ lotteryA
   else if (isError) statusMessage = `Error: ${error?.message}`;
   else if (isSuccess) statusMessage = `Success: ${JSON.stringify(data)}`;
 
-  const ticker = "FIRE"; // TODO get from contract
+  const ticker = tokenData && tokenData[0].status === "success" ? tokenData[0].result : "Unknown";
+  const lotteryTokens =
+    tokenData && tokenData[1].status === "success" ? (tokenData[1].result as unknown as bigint) : 0n;
 
   return (
     <div className="flex flex-col bg-base-100 px-10 py-5 rounded-3xl h-[100%]">
@@ -45,7 +69,7 @@ export const PurchaseTokens: FC<{ lotteryAddress: `0x${string}` }> = ({ lotteryA
         </button>
         <span className="text-wrap max-w-xs">{statusMessage}</span>
         <p className="text-sm">
-          Your Tokens: {lotteryTokens} ${ticker}
+          Your Tokens: {formatEther(lotteryTokens)} ${ticker}
         </p>
       </div>
     </div>
