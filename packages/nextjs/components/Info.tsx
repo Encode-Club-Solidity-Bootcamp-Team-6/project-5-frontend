@@ -1,5 +1,6 @@
 import { FC } from "react";
 import useLottery from "./useLottery";
+import { formatEther } from "viem";
 
 export const Info: FC<{ lotteryAddress: `0x${string}` }> = ({ lotteryAddress }) => {
   const { lottery } = useLottery(lotteryAddress);
@@ -11,14 +12,14 @@ export const Info: FC<{ lotteryAddress: `0x${string}` }> = ({ lotteryAddress }) 
       </p>
       <div className="flex flex-wrap justify-start flex-col gap-4">
         <p className="text-xl text-center">
-          Prize Pool: {lottery.prizePool.toString()} ${lottery.ticker}
+          Prize Pool: {formatEther(lottery.prizePool)} ${lottery.ticker}
         </p>
         <p className="text-md mb-0 text-center">
-          1 Bet = {lottery.betPrice.toString()} ${lottery.ticker} (+ {lottery.betFee.toString()} ${lottery.ticker} bet
-          fee)
+          1 Bet = {formatEther(lottery.betPrice)} ${lottery.ticker} (+ {formatEther(lottery.betFee)} ${lottery.ticker}{" "}
+          bet fee)
         </p>
         <p className="text-sm m-0 text-center">
-          1 ETH = {lottery.purchaseRatio.toString()} ${lottery.ticker}
+          1 ETH = {formatEther(lottery.purchaseRatio)} ${lottery.ticker}
         </p>
       </div>
     </div>

@@ -11,7 +11,7 @@ export const PurchaseTokens: FC<{ lotteryAddress: `0x${string}` }> = ({ lotteryA
   // TODO implement function to get user's lottery tokens
   const [lotteryTokens, setLotteryTokens] = useState(0);
 
-  const { lottery } = useLottery(lotteryAddress);
+  const { lottery, balance } = useLottery(lotteryAddress);
 
   const { data, isError, error, isLoading, isSuccess, write } = useContractWrite({
     address: lotteryAddress,
@@ -36,7 +36,7 @@ export const PurchaseTokens: FC<{ lotteryAddress: `0x${string}` }> = ({ lotteryA
         </button>
         <span className="text-wrap max-w-xs">{statusMessage}</span>
         <p className="text-sm">
-          Your Tokens: {lotteryTokens} ${lottery.ticker}
+          Your Tokens: {balance} ${lottery.ticker}
         </p>
       </div>
     </div>
