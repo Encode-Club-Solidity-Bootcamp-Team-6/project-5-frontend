@@ -1,6 +1,7 @@
 import { FC } from "react";
 import { abi } from "../../hardhat/artifacts/contracts/Lottery.sol/Lottery.json";
-import { useContractReads } from "wagmi";
+import { abi as tokenAbi } from "../../hardhat/artifacts/contracts/LotteryToken.sol/LotteryToken.json";
+import { useContractRead, useContractReads } from "wagmi";
 
 export const Info: FC<{ lotteryAddress: `0x${string}` }> = ({ lotteryAddress }) => {
   const lotteryContract = {
@@ -36,10 +37,24 @@ export const Info: FC<{ lotteryAddress: `0x${string}` }> = ({ lotteryAddress }) 
         ...lotteryContract,
         functionName: "betPrice",
       },
+      {
+        ...lotteryContract,
+        functionName: "paymentToken",
+      },
     ],
   });
 
-  const ticker = "FIRE"; // TODO get from contract
+  const {
+    data: dataToken,
+    isError: isErrorToken,
+    isLoading: isLoadingToken,
+  } = useContractRead({
+    address: data && data[5].status === "success" ? data[5].result : "",
+    abi: tokenAbi,
+    functionName: "symbol",
+  });
+
+  const ticker = `${dataToken}` || "Unknown";
 
   return (
     <div className="flex flex-col bg-base-100 px-10 py-5 rounded-3xl h-[100%] align-center">
