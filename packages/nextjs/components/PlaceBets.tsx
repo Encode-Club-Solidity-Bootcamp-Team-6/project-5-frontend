@@ -3,8 +3,8 @@ import { FC, useState } from "react";
 import { abi } from "../../hardhat/artifacts/contracts/Lottery.sol/Lottery.json";
 import { abi as tokenAbi } from "../../hardhat/artifacts/contracts/LotteryToken.sol/LotteryToken.json";
 import { EtherInput } from "./scaffold-eth";
-import { formatEther } from "viem";
-import { useContractRead, useContractReads } from "wagmi";
+import { formatEther, parseEther } from "viem";
+import { useContractRead, useContractReads, useContractWrite } from "wagmi";
 
 export const PlaceBets: FC<{ lotteryAddress: `0x${string}` }> = ({ lotteryAddress }) => {
   const [betAmount, setBetAmount] = useState("");
@@ -60,20 +60,36 @@ export const PlaceBets: FC<{ lotteryAddress: `0x${string}` }> = ({ lotteryAddres
     functionName: "symbol",
   });
 
-  const ticker = `${dataToken}` || "Unknown";
+  const {
+    data: dataBet,
+    isError: isErrorBet,
+    error: errorBet,
+    isLoading: isLoadingBet,
+    isSuccess: isSuccessBet,
+    write,
+  } = useContractWrite({
+    address: lotteryAddress,
+    abi,
+    functionName: "bet",
+    value: parseEther(betAmount),
+  });
 
-  // place bets on the lottery
-  // check if the lottery is still open and input amount is valid
-  // if so, place the bet and update the number of bets
-  const placeBets = () => {
-    // TODO
-  };
+  const ticker = `${dataToken}` || "Unknown";
+  let statusMessage = "";
+  if (isLoadingBet) statusMessage = "Loading...";
+  else if (isErrorBet) statusMessage = `Error: ${errorBet?.message}`;
+  else if (isSuccessBet) statusMessage = `Success: ${JSON.stringify(data)}`;
 
   return (
     <div className="flex flex-col bg-base-100 px-10 py-5 rounded-3xl h-[100%]">
-      <p className="text-sm font-bold text-left align-top">Place and View Bets</p>
+      <p className="text-sm font-bold text-left align-top">Place Bets</p>
       <div className="flex flex-col gap-4">
-        <EtherInput value={betAmount} onChange={setBetAmount} placeholder={`1 ${ticker}`} />
+        <EtherInput
+          value={betAmount}
+          onChange={setBetAmount}
+          placeholder={`1 ${ticker}`}
+          disabled={data && !data[1].result}
+        />
         <div className="flex flex-row justify-between">
           <p className="text-xs m-2">
             1 Bet = {data && data[0].status === "success" && formatEther(data[4].result.toString())} ${ticker}
@@ -82,10 +98,10 @@ export const PlaceBets: FC<{ lotteryAddress: `0x${string}` }> = ({ lotteryAddres
             Bet Fee: {data && data[0].status === "success" && formatEther(data[0].result.toString())} ${ticker}
           </p>
         </div>
-        <button className="btn btn-primary w-48 self-center" onClick={placeBets}>
+        <button className="btn btn-primary w-48 self-center" onClick={() => write()} disabled={data && !data[1].result}>
           Place Bet(s)
         </button>
-        <p className="text-sm text-center">Your bets: {bets}</p>
+        <p className="text-sm text-center">{statusMessage}</p>
       </div>
     </div>
   );
