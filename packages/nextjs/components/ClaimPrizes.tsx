@@ -2,49 +2,91 @@
 // if the lottery is still open, users should be able to see that
 // // if the lottery is closed, users should be able to see the results
 import { FC, useState } from "react";
-import useLottery from "./useLottery";
+import { abi } from "../../hardhat/artifacts/contracts/Lottery.sol/Lottery.json";
+import { abi as tokenAbi } from "../../hardhat/artifacts/contracts/LotteryToken.sol/LotteryToken.json";
+import { useAccount, useContractRead, useContractReads, useContractWrite } from "wagmi";
 
 export const ClaimPrizes: FC<{ lotteryAddress: `0x${string}` }> = ({ lotteryAddress }) => {
-  const bets = 0;
-  const [unclaimedPrizes, setUnclaimedPrizes] = useState(0);
-  const [claimedPrizes, setPrizes] = useState(0);
+  const [isLotteryClosed, setLotteryClosed] = useState(false);
+  const account = useAccount();
 
-  const { lottery } = useLottery(lotteryAddress);
-
-  // check if user has any bets AND if the lottery is closed
-  // return the number of unclaimed prizes
-  const checkPrizes = () => {
-    // TODO
+  const lotteryContract = {
+    address: lotteryAddress,
+    abi: abi as any,
   };
 
-  // check if user has any unclaimed prizes
-  // if so, claim them
-  const claimPrizes = () => {
-    // TODO
-  };
+  interface ContractReadsOutput {
+    data: any[] | undefined;
+    isError: boolean;
+    isLoading: boolean;
+  }
+
+  const { data, isError, isLoading }: ContractReadsOutput = useContractReads({
+    contracts: [
+      {
+        ...lotteryContract,
+        functionName: "prize",
+        args: [account.address],
+      },
+      {
+        ...lotteryContract,
+        functionName: "betsOpen",
+      },
+      {
+        ...lotteryContract,
+        functionName: "paymentToken",
+      },
+    ],
+  });
+
+  const yourPrizes = data && data[0].status === "success" && data[0].result.toString();
+
+  const {
+    data: dataToken,
+    isError: isErrorToken,
+    isLoading: isLoadingToken,
+  } = useContractRead({
+    address: data && data[2].status === "success" ? data[2].result : "",
+    abi: tokenAbi,
+    functionName: "symbol",
+  });
+
+  const {
+    data: dataWithdraw,
+    isError: isErrorWithdraw,
+    error: errorWithdraw,
+    isLoading: isLoadingWithdraw,
+    isSuccess: isSuccessWithdraw,
+    write,
+  } = useContractWrite({
+    address: lotteryAddress,
+    abi,
+    functionName: "prizeWithdraw",
+    args: [yourPrizes],
+  });
+
+  let statusMessage = "";
+  if (isLoadingWithdraw) statusMessage = "Loading...";
+  else if (isErrorWithdraw) statusMessage = `Error: ${errorWithdraw?.message}`;
+  else if (isSuccessWithdraw) statusMessage = `Success: ${JSON.stringify(dataWithdraw)}`;
 
   return (
     <div className="flex flex-col bg-base-100 px-10 py-5 rounded-3xl h-[100%]">
-      <p className="text-sm font-bold text-left align-top">Check and Claim Prizes</p>
-      {lottery.betsOpen && <p className="text-xs text-rose-400 m-0">The lottery is still ongoing.</p>}
-      {bets === 0 && <p className="text-xs text-rose-400 m-0">You haven&apos;t made any bets.</p>}
-      <div className="flex flex-row gap-4 justify-between align-center mt-8">
-        <div className="flex flex-col gap-8 justify-center h-[100%]">
-          <button
-            className="btn btn-primary w-48 self-center"
-            disabled={!bets || lottery.betsOpen}
-            onClick={checkPrizes}
-          >
-            Check Prizes
-          </button>
-          <p className="text-sm text-center">Unclaimed Prizes: {unclaimedPrizes} ETH</p>
-        </div>
-        <div className="flex flex-col gap-8 justify-center h-[100%]">
-          <button className="btn btn-primary w-48 self-center" disabled={unclaimedPrizes === 0} onClick={claimPrizes}>
-            Claim Prizes
-          </button>
-          <p className="text-sm text-center">Claimed Prizes: {claimedPrizes} ETH</p>
-        </div>
+      <p className="text-sm font-bold text-left align-top">Claim Prizes</p>
+      {!isLotteryClosed && <p className="text-xs text-rose-400 m-0">The lottery is still ongoing.</p>}
+
+      <div className="flex flex-col gap-8 justify-center h-[100%]">
+        <p className="text-sm text-center">
+          Your Prizes: {data && data[0].status === "success" && data[0].result.toString()} {dataToken}
+        </p>
+        <button
+          className="btn btn-primary w-48 self-center"
+          disabled={!yourPrizes || yourPrizes.toString() === "0" || !isLotteryClosed}
+          onClick={() => write()}
+        >
+          Claim Prizes
+        </button>
+        <span className="text-wrap max-w-xs">{statusMessage}</span>
       </div>
     </div>
   );
