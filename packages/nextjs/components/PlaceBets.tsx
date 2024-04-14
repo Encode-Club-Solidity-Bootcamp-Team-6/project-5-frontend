@@ -1,8 +1,10 @@
 // user should be able to see their bets and place new bets
 import { FC, useState } from "react";
 import { abi } from "../../hardhat/artifacts/contracts/Lottery.sol/Lottery.json";
-import { IntegerInput } from "./scaffold-eth";
-import { useContractReads } from "wagmi";
+import { abi as tokenAbi } from "../../hardhat/artifacts/contracts/LotteryToken.sol/LotteryToken.json";
+import { EtherInput } from "./scaffold-eth";
+import { formatEther } from "viem";
+import { useContractRead, useContractReads } from "wagmi";
 
 export const PlaceBets: FC<{ lotteryAddress: `0x${string}` }> = ({ lotteryAddress }) => {
   const [betAmount, setBetAmount] = useState("");
@@ -48,7 +50,17 @@ export const PlaceBets: FC<{ lotteryAddress: `0x${string}` }> = ({ lotteryAddres
     ],
   });
 
-  const ticker = "FIRE"; // TODO get from contract
+  const {
+    data: dataToken,
+    isError: isErrorToken,
+    isLoading: isLoadingToken,
+  } = useContractRead({
+    address: data && data[5].status === "success" ? data[5].result : "",
+    abi: tokenAbi,
+    functionName: "symbol",
+  });
+
+  const ticker = `${dataToken}` || "Unknown";
 
   // place bets on the lottery
   // check if the lottery is still open and input amount is valid
@@ -61,18 +73,13 @@ export const PlaceBets: FC<{ lotteryAddress: `0x${string}` }> = ({ lotteryAddres
     <div className="flex flex-col bg-base-100 px-10 py-5 rounded-3xl h-[100%]">
       <p className="text-sm font-bold text-left align-top">Place and View Bets</p>
       <div className="flex flex-col gap-4">
-        <IntegerInput
-          value={betAmount}
-          onChange={val => setBetAmount(val.toString())}
-          disableMultiplyBy1e18
-          placeholder="Bet amount"
-        />
+        <EtherInput value={betAmount} onChange={setBetAmount} placeholder={`1 ${ticker}`} />
         <div className="flex flex-row justify-between">
           <p className="text-xs m-2">
-            1 Bet = {data && data[0].status === "success" && data[4].result.toString()} ${ticker}
+            1 Bet = {data && data[0].status === "success" && formatEther(data[4].result.toString())} ${ticker}
           </p>
           <p className="text-xs m-2">
-            Bet Fee: {data && data[0].status === "success" && data[0].result.toString()} ${ticker}
+            Bet Fee: {data && data[0].status === "success" && formatEther(data[0].result.toString())} ${ticker}
           </p>
         </div>
         <button className="btn btn-primary w-48 self-center" onClick={placeBets}>

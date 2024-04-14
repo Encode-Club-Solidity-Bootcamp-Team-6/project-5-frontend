@@ -1,6 +1,7 @@
 import { FC } from "react";
 import { abi } from "../../hardhat/artifacts/contracts/Lottery.sol/Lottery.json";
 import { abi as tokenAbi } from "../../hardhat/artifacts/contracts/LotteryToken.sol/LotteryToken.json";
+import { formatEther } from "viem";
 import { useContractRead, useContractReads } from "wagmi";
 
 export const Info: FC<{ lotteryAddress: `0x${string}` }> = ({ lotteryAddress }) => {
@@ -64,12 +65,13 @@ export const Info: FC<{ lotteryAddress: `0x${string}` }> = ({ lotteryAddress }) 
       <div className="flex flex-wrap justify-start flex-col gap-4">
         {data && data[2].status === "success" && (
           <p className="text-xl text-center">
-            Prize Pool: {data[2].result.toString()} ${ticker}
+            Prize Pool: {formatEther(data[2].result.toString())} ${ticker}
           </p>
         )}
         {data && data[4].status === "success" && (
           <p className="text-md mb-0 text-center">
-            1 Bet = {data[4].result.toString()} ${ticker} (+ {data[0].result.toString()} ${ticker} bet fee)
+            1 Bet = {formatEther(data[4].result.toString())} ${ticker} (+ {formatEther(data[0].result.toString())} $
+            {ticker} bet fee)
           </p>
         )}
         {data && data[3].status === "success" && (

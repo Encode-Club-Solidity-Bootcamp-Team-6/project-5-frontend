@@ -9,7 +9,7 @@ import { PurchaseTokens } from "~~/components/PurchaseTokens";
 import { AddressInput } from "~~/components/scaffold-eth";
 
 const Home: NextPage = () => {
-  const [lotteryAddress, setLotteryAddress] = useState<`0x${string}`>("0xa349778034ccD56b78092beF44857Be0e0392F9a");
+  const [lotteryAddress, setLotteryAddress] = useState<`0x${string}`>("0x3B0DAf0D790c8c850Fb94Cdce290188745f0dAcf");
   const header = (
     <div className="flex flex-col px-5 gap-3 w-full max-w-lg">
       <h1 className="text-center">
