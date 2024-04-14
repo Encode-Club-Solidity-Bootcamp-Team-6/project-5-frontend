@@ -9,6 +9,8 @@ type ContractReadsOutput = {
 };
 
 const useLottery = (lotteryAddress: string) => {
+  const account = useAccount();
+
   const lotteryContract = {
     address: lotteryAddress,
     abi: abi as any,
@@ -40,10 +42,13 @@ const useLottery = (lotteryAddress: string) => {
         ...lotteryContract,
         functionName: "paymentToken",
       },
+      {
+        ...lotteryContract,
+        functionName: "prize",
+        args: [account.address],
+      },
     ],
   });
-
-  const account = useAccount();
 
   const tokenContract = {
     address: data?.[5].result as string,
@@ -65,13 +70,14 @@ const useLottery = (lotteryAddress: string) => {
   });
 
   const lottery = {
-    betFee: data && data[0].status === "success" ? data[0].result : 0,
+    betFee: data && data[0].status === "success" ? data[0].result.toString() : 0,
     betsOpen: data && data[1].status === "success" ? data[1].result : false,
-    prizePool: data && data[2].status === "success" ? data[2].result : 0,
-    purchaseRatio: data && data[3].status === "success" ? data[3].result : 0,
-    betPrice: data && data[4].status === "success" ? data[4].result : 0,
+    prizePool: data && data[2].status === "success" ? data[2].result.toString() : 0,
+    purchaseRatio: data && data[3].status === "success" ? data[3].result.toString() : 0,
+    betPrice: data && data[4].status === "success" ? data[4].result.toString() : 0,
     paymentToken: data && data[5].status === "success" ? data[5].result : null,
-    ticker: dataToken && dataToken[0].status === "success" ? dataToken[0].result : "Unknown",
+    ticker: dataToken && dataToken[0].status === "success" ? dataToken[0].result.toString() : "Unknown",
+    prize: data && data[6].status === "success" ? data[6].result.toString() : 0,
   };
 
   const balance = dataToken && dataToken[1].status === "success" ? dataToken[1].result : 0;

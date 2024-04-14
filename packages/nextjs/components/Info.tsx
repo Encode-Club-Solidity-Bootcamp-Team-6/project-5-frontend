@@ -19,7 +19,7 @@ export const Info: FC<{ lotteryAddress: `0x${string}` }> = ({ lotteryAddress }) 
           bet fee)
         </p>
         <p className="text-sm m-0 text-center">
-          1 ETH = {formatEther(lottery.purchaseRatio)} ${lottery.ticker}
+          1 ETH = {lottery.purchaseRatio} ${lottery.ticker}
         </p>
       </div>
     </div>

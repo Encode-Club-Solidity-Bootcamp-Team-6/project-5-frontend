@@ -13,7 +13,7 @@ import { useAccount, useContractReads, useContractWrite } from "wagmi";
 
 export const LotteryAdmin: FC<{ lotteryAddress: `0x${string}` }> = ({ lotteryAddress }) => {
   const account = useAccount();
-  const [openBetsUnixTimestamp, setOpenBetsUnixTimestamp] = useState<bigint | string>(0n);
+  const [openBetsUnixTimestamp, setOpenBetsUnixTimestamp] = useState<bigint | string>();
 
   const lotteryContract = {
     address: lotteryAddress,
@@ -88,7 +88,7 @@ export const LotteryAdmin: FC<{ lotteryAddress: `0x${string}` }> = ({ lotteryAdd
       <div className="flex flex-col gap-8 justify-center h-[100%]">
         <div className="flex flex-col gap-2">
           <IntegerInput
-            value={openBetsUnixTimestamp}
+            value={openBetsUnixTimestamp || ""}
             onChange={newVal => setOpenBetsUnixTimestamp(newVal)}
             placeholder="Unix Timestamp"
             disableMultiplyBy1e18
