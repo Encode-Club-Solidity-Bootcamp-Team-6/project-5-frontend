@@ -1,54 +1,13 @@
 // user should be able to see their bets and place new bets
 import { FC, useState } from "react";
-import { abi } from "../../hardhat/artifacts/contracts/Lottery.sol/Lottery.json";
 import { IntegerInput } from "./scaffold-eth";
-import { useContractReads } from "wagmi";
+import useLottery from "./useLottery";
 
 export const PlaceBets: FC<{ lotteryAddress: `0x${string}` }> = ({ lotteryAddress }) => {
   const [betAmount, setBetAmount] = useState("");
   const [bets, setBets] = useState(0);
 
-  const lotteryContract = {
-    address: lotteryAddress,
-    abi: abi as any,
-  };
-
-  interface ContractReadsOutput {
-    data: any[] | undefined;
-    isError: boolean;
-    isLoading: boolean;
-  }
-
-  const { data, isError, isLoading }: ContractReadsOutput = useContractReads({
-    contracts: [
-      {
-        ...lotteryContract,
-        functionName: "betFee",
-      },
-      {
-        ...lotteryContract,
-        functionName: "betsOpen",
-      },
-      {
-        ...lotteryContract,
-        functionName: "prizePool",
-      },
-      {
-        ...lotteryContract,
-        functionName: "purchaseRatio",
-      },
-      {
-        ...lotteryContract,
-        functionName: "betPrice",
-      },
-      {
-        ...lotteryContract,
-        functionName: "paymentToken",
-      },
-    ],
-  });
-
-  const ticker = "FIRE"; // TODO get from contract
+  const { lottery } = useLottery(lotteryAddress);
 
   // place bets on the lottery
   // check if the lottery is still open and input amount is valid
@@ -69,10 +28,10 @@ export const PlaceBets: FC<{ lotteryAddress: `0x${string}` }> = ({ lotteryAddres
         />
         <div className="flex flex-row justify-between">
           <p className="text-xs m-2">
-            1 Bet = {data && data[0].status === "success" && data[4].result.toString()} ${ticker}
+            1 Bet = {lottery.betPrice.toString()} ${lottery.ticker}
           </p>
           <p className="text-xs m-2">
-            Bet Fee: {data && data[0].status === "success" && data[0].result.toString()} ${ticker}
+            Bet Fee: {lottery.betFee.toString()} ${lottery.ticker}
           </p>
         </div>
         <button className="btn btn-primary w-48 self-center" onClick={placeBets}>
