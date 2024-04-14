@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { NextPage } from "next";
 import { ClaimPrizes } from "~~/components/ClaimPrizes";
 import { Info } from "~~/components/Info";
+import { LotteryAdmin } from "~~/components/LotteryAdmin";
 import { PlaceBets } from "~~/components/PlaceBets";
 import { PurchaseTokens } from "~~/components/PurchaseTokens";
 import { AddressInput } from "~~/components/scaffold-eth";
@@ -33,6 +34,7 @@ const Home: NextPage = () => {
             <PurchaseTokens lotteryAddress={lotteryAddress} />
             <PlaceBets lotteryAddress={lotteryAddress} />
             <ClaimPrizes lotteryAddress={lotteryAddress} />
+            <LotteryAdmin lotteryAddress={lotteryAddress} />
           </div>
         </div>
       </div>
